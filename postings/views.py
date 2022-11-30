@@ -43,16 +43,27 @@ def posting_list(request):
     # page가 선택되지 않았을 경우에는 '1'로 설정
     if page == None:
         page = '1'
+    # 존재하지 않는 경로로 접근하는 경우 404 페이지로 반환
+    elif page == '0' or not page.isdecimal():
+        return render(request, '404.html')
 
     # 화면에 보여질 페이지 개수 설정
     count = 5
     # 현재 보여지는 페이지를 정수형으로 변환
     recent_page = int(page)
+    # 현재 페이지의 글 개수
+    recent_page_count = 10
     
     # 마지막 페이지 번호 계산
     last_page = postings_num // 10
     if postings_num % 10 != 0:
-        last_page + 1
+        last_page += 1
+    # 현재 페이지의 글 개수 계산
+    if recent_page == last_page:
+        recent_page_count = postings_num % 10
+    # 마지막 페이지보다 큰 숫자로 접근하는 경우 404 페이지로 반환
+    elif recent_page > last_page:
+        return render(request, '404.html')
     
     # '이전' 버튼을 눌렀을 때 이동할 페이지 번호 계산
     previous_page = ((recent_page-1)//count)*count
@@ -82,8 +93,10 @@ def posting_list(request):
 
     # 현재 페이지에서 보여지는 첫 번째 게시글 번호 저장
     page_postings_start_index = postings_num-(recent_page-1)*10
+    print(recent_page_count)
 
     context = {
+        'recent_page_count': recent_page_count*-1,
         'last_page': last_page,
         'previous_page': previous_page,
         'move_previous': move_previous,
@@ -171,11 +184,11 @@ def posting_delete(request, posting_id):
     posting = get_object_or_404(Posting, id=posting_id)
     # [미션] 글(posting) 작성자(author)가 로그인한 사람(request.user)과 같을 경우에만 글 삭제가 가능하도록 조건문 작성
     # [미션] True를 지우고 작성
-    if True:
+    if posting.author==request.user:
         posting.delete()
         return redirect('postings:posting_list')
     # [미션] posting_id에 해당하는 페이지로 redirect
-    return 
+    return redirect('postings:posting_list',posting_id)
 
 # [코드 작성] login_required 데코레이션 추가
 
@@ -185,6 +198,6 @@ def comment_delete(request, posting_id, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
     # [미션] 댓글(comment) 작성자(author)가 로그인한 사람(request.user)과 같을 경우에만 댓글 삭제가 가능하도록 조건문 작성
     # [미션] True를 지우고 작성
-    if True:
+    if comment.author==request.user:
         comment.delete()
-    return redirect('postings:posting_detail', posting_id)
+        return redirect('postings:posting_list',posting_id)
