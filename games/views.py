@@ -188,7 +188,7 @@ def adventure_attack_result(request):
         # 캐릭터와 마주친 랜덤 적
         enemy_id = request.POST.get('random-enemy')
         enemy = get_object_or_404(Enemy, id=enemy_id)
-        context = {'enemy_name': enemy.name}
+
         # [미션] 자유롭게 코드 작성
         # [미션] 필요 시 context 작성 후 html 페이지에 전달
         if character.weapon.power*10 >= enemy.hp:
@@ -196,15 +196,17 @@ def adventure_attack_result(request):
             reward_coin = randint(enemy.hp*10-5, enemy.hp*10+5)
             character.coin += reward_coin
             character.save()
-            return render(request, 'games/adventure_attack_result.html', context)
         else:
             result = '패배'
-            reward_coin = randint(enemy.hp*10-5, enemy.hp*10+5)
-            character.coin -= reward_coin
-            character.save()
-            
-            return render(request, 'games/attack_result_2.html', context)
-    return render(request, 'games/adventure_attack.html')
+            reward_coin = 0
+        
+        context = {
+            'enemy': enemy,
+            'result': result,
+            'reward_coin' : reward_coin,
+        }
+        return render(request, 'games/adventure_attack_result.html', context)
+    return render(request, 'games/adventure_attack.html', context)
 
 # 무기 공방
 def weapon_workroom(request):
