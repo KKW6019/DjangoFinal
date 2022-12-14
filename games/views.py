@@ -202,6 +202,7 @@ def adventure_attack_result(request):
             reward_coin = randint(enemy.hp*10-5, enemy.hp*10+5)
             character.coin -= reward_coin
             character.save()
+            context = {'enemy_name': enemy.name}
             return render(request, 'games/attack_result_2.html')
     return render(request, 'games/adventure_attack.html')
 
